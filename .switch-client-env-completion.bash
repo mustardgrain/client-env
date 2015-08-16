@@ -1,53 +1,56 @@
 #!/bin/bash
 
-LOCAL_DEV_DIR=$HOME/.mustardgrain/dev
+LOCAL_BIN_ROOT_DIR=$HOME/.mustardgrain/bin
+LOCAL_ENV_ROOT_DIR=$HOME/.mustardgrain/env
 
 function switch-client-env() {
-  if [ ! -d "$LOCAL_DEV_DIR" ] ; then
-    echo "Please symlink $LOCAL_DEV_DIR to your local development directory root"
-    exit 1
-  fi
+  client=$1
 
-  env=$1
-  orig_pwd=`pwd`
-  cd $LOCAL_DEV_DIR
-  LOCAL_DEV_DIR=`pwd -P`
-  cd $LOCAL_DEV_DIR
-  root_pwd=$LOCAL_DEV_DIR/$env/${env}-env
-
-  if [ "$env" = "" ] ; then
+  if [ "$client" = "" ] ; then
     echo "Please specify the client environment"
-    return
+    return 1
   fi
 
-  if [ ! -d "$root_pwd" ] ; then
-    echo "Can't switch to the $env client environment - directory $root_pwd doesn't exist"
-    return
+  orig_pwd=`pwd`
+  has_flag=0
+
+  cd $LOCAL_BIN_ROOT_DIR
+  LOCAL_BIN_ROOT_DIR=`pwd -P`
+
+  if [ -d "$LOCAL_BIN_ROOT_DIR/$client/bin" ] ; then
+    cd $LOCAL_BIN_ROOT_DIR/$client/bin
+    export PATH="`pwd -P`:$PATH"
+    has_flag=1
   fi
 
-  if [ ! -f "$root_pwd/client-env.sh" ] ; then
-    echo "Can't switch to the $env client environment - directory $root_pwd doesn't contain a client-env.sh file"
-    return
+  cd $LOCAL_ENV_ROOT_DIR
+  LOCAL_ENV_ROOT_DIR=`pwd -P`
+
+  if [ -f "$LOCAL_ENV_ROOT_DIR/$client/client-env.sh" ] ; then
+    source $LOCAL_ENV_ROOT_DIR/$client/client-env.sh
+    has_flag=1
   fi
 
-  source $root_pwd/client-env.sh
-
-  PS1="($env) $DEFAULT_PS1"
+  if [ $has_flag -eq 1 ] ; then
+    PS1="($client) $DEFAULT_PS1"
+  else
+    echo "Could not find $client in $LOCAL_BIN_ROOT_DIR or $LOCAL_ENV_ROOT_DIR"
+  fi
 
   cd "$orig_pwd"
 }
 
 function _switch_client_env_completion() {
-  if [ ! -d "$LOCAL_DEV_DIR" ] ; then
-    echo "Please symlink $LOCAL_DEV_DIR to your local development directory root"
-    exit 1
-  fi
-
-  # Look at the list of directories in $HOME/dev
+  # Look at the list of directories in $HOME/.mustardgrain/bin and
+  # $HOME/.mustardgrain/env
   orig_pwd=`pwd`
-  cd "$LOCAL_DEV_DIR"
-  cd `pwd -P`
-  find . -type d -name "*-env" | awk -F/ '{print $2}'
+
+  cd "$LOCAL_BIN_ROOT_DIR"
+  ls -1
+
+  cd "$LOCAL_ENV_ROOT_DIR"
+  ls -1
+
   cd "$orig_pwd"
 }
 
