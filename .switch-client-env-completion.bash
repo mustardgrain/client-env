@@ -3,6 +3,8 @@
 LOCAL_BIN_ROOT_DIR=$HOME/.mustardgrain/bin
 LOCAL_ENV_ROOT_DIR=$HOME/.mustardgrain/env
 
+DEFAULT_PS1=$PS1
+
 function switch-client-env() {
   client=$1
 
