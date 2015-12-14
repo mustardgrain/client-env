@@ -5,7 +5,7 @@ LOCAL_ENV_ROOT_DIR=$HOME/.mustardgrain/env
 
 DEFAULT_PS1=$PS1
 
-function switch-client-env() {
+function client-env-set() {
   client=$1
 
   if [ "$client" = "" ] ; then
@@ -39,21 +39,37 @@ function switch-client-env() {
     echo "Could not find $client in $LOCAL_BIN_ROOT_DIR or $LOCAL_ENV_ROOT_DIR"
   fi
 
+  if [ ! -L "$LOCAL_ENV_ROOT_DIR/current" ] ; then
+    # Make our current client setting sticky. Remember to go back
+    # to the LOCAL_ENV_ROOT_DIR directory because the above source
+    # could leave us in an arbitrary directory :\
+    cd $LOCAL_ENV_ROOT_DIR
+    ln -s $client current
+  fi
+
   cd "$orig_pwd"
 }
 
-function _switch_client_env_completion() {
+function client-env-clear() {
+  rm -f $LOCAL_ENV_ROOT_DIR/current
+}
+
+function _client_env_set_completion() {
   # Look at the list of directories in $HOME/.mustardgrain/bin and
   # $HOME/.mustardgrain/env
   orig_pwd=`pwd`
 
   cd "$LOCAL_BIN_ROOT_DIR"
-  ls -1
+  ls -1 | grep -v "current"
 
   cd "$LOCAL_ENV_ROOT_DIR"
-  ls -1
+  ls -1 | grep -v "current"
 
   cd "$orig_pwd"
 }
 
-complete -W "$(_switch_client_env_completion)" switch-client-env
+complete -W "$(_client_env_set_completion)" client-env-set
+
+if [ -L "$LOCAL_ENV_ROOT_DIR/current" ] ; then
+  client-env-set `readlink $LOCAL_ENV_ROOT_DIR/current`
+fi
