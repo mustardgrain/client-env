@@ -1,8 +1,5 @@
 #!/bin/bash
 
-LOCAL_BIN_ROOT_DIR=$HOME/.mustardgrain/bin
-LOCAL_ENV_ROOT_DIR=$HOME/.mustardgrain/env
-
 DEFAULT_PS1=$PS1
 
 function client-env-set() {
@@ -14,62 +11,54 @@ function client-env-set() {
   fi
 
   orig_pwd=`pwd`
-  has_flag=0
 
-  cd $LOCAL_BIN_ROOT_DIR
-  LOCAL_BIN_ROOT_DIR=`pwd -P`
+  cd $LOCAL_DEV_DIR
 
-  if [ -d "$LOCAL_BIN_ROOT_DIR/$client/bin" ] ; then
-    cd $LOCAL_BIN_ROOT_DIR/$client/bin
-    export PATH="`pwd -P`:$PATH"
-    has_flag=1
-  fi
+  if [ -d "$LOCAL_DEV_DIR/$client" ] ; then
+    cd $LOCAL_DEV_DIR/$client
 
-  cd $LOCAL_ENV_ROOT_DIR
-  LOCAL_ENV_ROOT_DIR=`pwd -P`
+    if [ -d "$client-env/bin" ] ; then
+      cd $client-env/bin
+      export PATH="`pwd -P`:$PATH"
+      cd ../..
+    fi
 
-  if [ -f "$LOCAL_ENV_ROOT_DIR/$client/client-env.sh" ] ; then
-    source $LOCAL_ENV_ROOT_DIR/$client/client-env.sh
-    has_flag=1
-  fi
+    if [ -f "$client-env/conf/client-env.sh" ] ; then
+      source $client-env/conf/client-env.sh
+    fi
 
-  if [ $has_flag -eq 1 ] ; then
     PS1="($client) $DEFAULT_PS1"
-  else
-    echo "Could not find $client in $LOCAL_BIN_ROOT_DIR or $LOCAL_ENV_ROOT_DIR"
-  fi
 
-  if [ ! -L "$LOCAL_ENV_ROOT_DIR/current" ] ; then
-    # Make our current client setting sticky. Remember to go back
-    # to the LOCAL_ENV_ROOT_DIR directory because the above source
-    # could leave us in an arbitrary directory :\
-    cd $LOCAL_ENV_ROOT_DIR
-    ln -s $client current
+    if [ ! -L "$HOME/.current-client-env" ] ; then
+      # Make our current client setting sticky. Remember to go back
+      # to the LOCAL_DEV_DIR directory because the above source
+      # could leave us in an arbitrary directory :\
+      cd $HOME
+      ln -s $LOCAL_DEV_DIR/$client .current-client-env
+    fi
+  else
+    echo "Could not find $client in $LOCAL_DEV_DIR"
   fi
 
   cd "$orig_pwd"
 }
 
 function client-env-clear() {
-  rm -f $LOCAL_ENV_ROOT_DIR/current
+  rm -f $HOME/.current-client-env
 }
 
 function _client_env_set_completion() {
-  # Look at the list of directories in $HOME/.mustardgrain/bin and
-  # $HOME/.mustardgrain/env
+  # Look at the list of directories in $LOCAL_DEV_DIR
   orig_pwd=`pwd`
 
-  cd "$LOCAL_BIN_ROOT_DIR"
-  ls -1 | grep -v "current"
-
-  cd "$LOCAL_ENV_ROOT_DIR"
-  ls -1 | grep -v "current"
+  cd "$LOCAL_DEV_DIR"
+  ls -1 | grep -v "go"
 
   cd "$orig_pwd"
 }
 
 complete -W "$(_client_env_set_completion)" client-env-set
 
-if [ -L "$LOCAL_ENV_ROOT_DIR/current" ] ; then
-  client-env-set `readlink $LOCAL_ENV_ROOT_DIR/current`
+if [ -L "$HOME/.current-client-env" ] ; then
+  client-env-set $(basename `readlink $HOME/.current-client-env`)
 fi
