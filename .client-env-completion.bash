@@ -2,6 +2,27 @@
 
 DEFAULT_PS1=$PS1
 
+function __client-env-symlinker() {
+  client=$1
+  dir=$2
+  file=$3
+
+  if [ -f $dir/$file ] ; then
+    result=`file -hb $dir/$file | grep "^symbolic link"`
+
+    if [ $? -ne 0 ] ; then
+      echo "Not removing $dir/$file as it is not a symbolic link"
+      return 1
+    fi
+  fi
+
+  echo $dir
+  mkdir -p $dir
+  cd $dir
+  rm -f $file
+  ln -s $LOCAL_DEV_DIR/$client/${client}-env/conf/$file
+}
+
 function client-env-set() {
   client=$1
 
