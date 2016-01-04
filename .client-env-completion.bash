@@ -16,7 +16,6 @@ function __client-env-symlinker() {
     fi
   fi
 
-  echo $dir
   mkdir -p $dir
   cd $dir
   rm -f $file
