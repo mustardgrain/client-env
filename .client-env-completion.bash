@@ -2,24 +2,40 @@
 
 DEFAULT_PS1=$PS1
 
-function __client-env-symlinker() {
+function __client-env-symlink-add() {
   client=$1
   dir=$2
   file=$3
 
   if [ -f $dir/$file ] ; then
-    result=`file -hb $dir/$file | grep "^symbolic link"`
-
-    if [ $? -ne 0 ] ; then
+    if [ ! -L "$dir/$file" ] ; then
       echo "Not removing $dir/$file as it is not a symbolic link"
       return 1
     fi
   fi
 
+  orig_pwd=`pwd`
   mkdir -p $dir
   cd $dir
   rm -f $file
   ln -s $LOCAL_DEV_DIR/$client/${client}-env/conf/$file
+  cd "$orig_pwd"
+}
+
+function __client-env-symlink-rm() {
+  client=$1
+  dir=$2
+  file=$3
+
+  if [ ! -L "$dir/$file" ] ; then
+    echo "Not removing $dir/$file as it is not a symbolic link"
+    return 1
+  fi
+
+  orig_pwd=`pwd`
+  cd $dir
+  rm -f $file
+  cd "$orig_pwd"
 }
 
 function client-env-set() {
@@ -32,8 +48,6 @@ function client-env-set() {
 
   orig_pwd=`pwd`
 
-  cd $LOCAL_DEV_DIR
-
   if [ -d "$LOCAL_DEV_DIR/$client" ] ; then
     cd $LOCAL_DEV_DIR/$client
 
@@ -43,8 +57,8 @@ function client-env-set() {
       cd ../..
     fi
 
-    if [ -f "$client-env/conf/client-env.sh" ] ; then
-      source $client-env/conf/client-env.sh
+    if [ -f "$client-env/conf/client-env-set.sh" ] ; then
+      source $client-env/conf/client-env-set.sh
     fi
 
     PS1="($client) $DEFAULT_PS1"
@@ -64,7 +78,19 @@ function client-env-set() {
 }
 
 function client-env-clear() {
-  rm -f $HOME/.current-client-env
+  if [ -L "$HOME/.current-client-env" ] ; then
+    client=$(basename `readlink $HOME/.current-client-env`)
+    orig_pwd=`pwd`
+
+    if [ -f "$LOCAL_DEV_DIR/$client/$client-env/conf/client-env-clear.sh" ] ; then
+      source $LOCAL_DEV_DIR/$client/$client-env/conf/client-env-clear.sh
+    fi
+
+    rm -f $HOME/.current-client-env
+    cd "$orig_pwd"
+  fi
+
+  PS1="$DEFAULT_PS1"
 }
 
 function _client_env_set_completion() {
