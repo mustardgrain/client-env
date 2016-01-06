@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DEFAULT_PS1=$PS1
-
 function __client-env-symlink-add() {
   client=$1
   dir=$2
@@ -61,7 +59,7 @@ function client-env-set() {
       source $client-env/conf/client-env-set.sh
     fi
 
-    PS1="($client) $DEFAULT_PS1"
+    PS1="($client) $PS1"
 
     if [ ! -L "$HOME/.current-client-env" ] ; then
       # Make our current client setting sticky. Remember to go back
@@ -90,7 +88,7 @@ function client-env-clear() {
     cd "$orig_pwd"
   fi
 
-  PS1="$DEFAULT_PS1"
+  PS1=`echo "$PS1" | sed "s@[(]$client[)] @@"`
 }
 
 function _client_env_set_completion() {
@@ -98,7 +96,12 @@ function _client_env_set_completion() {
   orig_pwd=`pwd`
 
   cd "$LOCAL_DEV_DIR"
-  ls -1 | grep -v "go"
+
+  for client in `ls -1 | grep -v "go"` ; do
+    if [ -d "$LOCAL_DEV_DIR/$client/${client}-env" ] ; then
+      echo $client
+    fi
+  done
 
   cd "$orig_pwd"
 }
