@@ -21,17 +21,9 @@ function __enable_docker() {
       eval "$(docker-machine env $DOCKER_MACHINE_VM_NAME)"
     fi
   fi
-
-  if [ "$DOCKER_HOST" != "" ] ; then
-    docker-multi-rm.sh
-  fi
 }
 
 function __disable_docker() {
-  if [ "$DOCKER_HOST" != "" ] ; then
-    docker-multi-rm.sh
-  fi
-
   if [ `uname` = 'Darwin' -a "`which docker-machine`" != "" ] ; then
     # Auto-stop the Docker machine, if needed.
     if [ "`docker-machine status $DOCKER_MACHINE_VM_NAME`" = 'Running' ] ; then
