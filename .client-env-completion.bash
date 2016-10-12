@@ -34,6 +34,11 @@ function __disable_docker() {
   sudo launchctl unload /System/Library/LaunchDaemons/org.ntp.ntpd.plist
   echo "--------------------------------------------------------------------------------"
 
+  if [ `docker ps -a | grep -v "CONTAINER" | wc -l ` -gt 0 ] ; then
+    docker ps -a | grep -v "CONTAINER" | awk '{print $1}' | xargs docker stop
+    docker ps -a | grep -v "CONTAINER" | awk '{print $1}' | xargs docker rm
+  fi
+
   if [ `uname` = 'Darwin' -a "`which docker-machine`" != "" ] ; then
     # Auto-stop the Docker machine, if needed.
     if [ "`docker-machine status $DOCKER_MACHINE_VM_NAME`" = 'Running' ] ; then
