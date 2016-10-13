@@ -3,11 +3,6 @@
 function __enable_docker() {
   local client=$1
 
-  echo "--------------------------------------------------------------------------------"
-  echo "WARNING: Implementing temporary workaround for stability issues running Docker on macOS Sierra"
-  sudo launchctl unload /System/Library/LaunchDaemons/org.ntp.ntpd.plist
-  echo "--------------------------------------------------------------------------------"
-
   if [ "$client" = "" ] ; then
     echo "Please specify the client environment"
     return 1
@@ -29,11 +24,6 @@ function __enable_docker() {
 }
 
 function __disable_docker() {
-  echo "--------------------------------------------------------------------------------"
-  echo "WARNING: Implementing temporary workaround for stability issues running Docker on macOS Sierra"
-  sudo launchctl unload /System/Library/LaunchDaemons/org.ntp.ntpd.plist
-  echo "--------------------------------------------------------------------------------"
-
   if [ `docker ps -a | grep -v "CONTAINER" | wc -l ` -gt 0 ] ; then
     docker ps -a | grep -v "CONTAINER" | awk '{print $1}' | xargs docker stop
     docker ps -a | grep -v "CONTAINER" | awk '{print $1}' | xargs docker rm
