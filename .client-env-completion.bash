@@ -1,44 +1,5 @@
 #!/bin/bash
 
-function __enable_docker() {
-  local client=$1
-
-  if [ "$client" = "" ] ; then
-    echo "Please specify the client environment"
-    return 1
-  fi
-
-  export DOCKER_MACHINE_VM_NAME=$client
-
-  if [ `uname` = 'Darwin' -a "`which docker-machine`" != "" ] ; then
-    # Auto-start the Docker machine, if needed.
-    if [ "`docker-machine status $DOCKER_MACHINE_VM_NAME`" = 'Stopped' ] ; then
-      docker-machine start $DOCKER_MACHINE_VM_NAME
-    fi
-
-    # Auto-configure the Docker machine, if needed.
-    if [ "`docker-machine status $DOCKER_MACHINE_VM_NAME`" = 'Running' ] ; then
-      eval "$(docker-machine env $DOCKER_MACHINE_VM_NAME)"
-    fi
-  fi
-}
-
-function __disable_docker() {
-  if [ `docker ps -a | grep -v "CONTAINER" | wc -l ` -gt 0 ] ; then
-    docker ps -a | grep -v "CONTAINER" | awk '{print $1}' | xargs docker stop
-    docker ps -a | grep -v "CONTAINER" | awk '{print $1}' | xargs docker rm
-  fi
-
-  if [ `uname` = 'Darwin' -a "`which docker-machine`" != "" ] ; then
-    # Auto-stop the Docker machine, if needed.
-    if [ "`docker-machine status $DOCKER_MACHINE_VM_NAME`" = 'Running' ] ; then
-      docker-machine stop $DOCKER_MACHINE_VM_NAME
-    fi
-  fi
-
-  unset DOCKER_MACHINE_VM_NAME
-}
-
 function __client-env-symlink-add() {
   local client=$1
   local dir=$2
