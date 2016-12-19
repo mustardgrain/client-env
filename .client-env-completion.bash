@@ -1,39 +1,64 @@
 #!/bin/bash
 
-function __client-env-symlink-add() {
+function __client-env-cp() {
   local client=$1
-  local dir=$2
-  local file=$3
+  local dst_dir=$2
+  local file_name=$3
+  local dst_file_name=$dst_dir/$file_name
+  local src_file_name=$LOCAL_DEV_DIR/$client/${client}-env/conf/$file_name
 
-  if [ -f $dir/$file ] ; then
-    if [ ! -L "$dir/$file" ] ; then
-      echo "Not removing $dir/$file as it is not a symbolic link"
-      return 1
-    fi
+  if [ -f $dst_file_name ] ; then
+    echo "Not copying $src_file_name to $dst_file_name as $dst_file_name is already present"
+    return 1
   fi
 
-  local orig_pwd="`pwd`"
-  mkdir -p $dir
-  cd $dir
-  rm -f $file
-  ln -s $LOCAL_DEV_DIR/$client/${client}-env/conf/$file
-  cd "$orig_pwd"
+  mkdir -p $dst_dir
+  cp $src_file_name $dst_file_name
+}
+
+function __client-env-rm() {
+  local client=$1
+  local dst_dir=$2
+  local file_name=$3
+  local dst_file_name=$dst_dir/$file_name
+  local src_file_name=$LOCAL_DEV_DIR/$client/${client}-env/conf/$file_name
+
+  if [ ! -f $dst_file_name ] ; then
+    echo "Not removing $dst_file_name as it is not present"
+    return 1
+  fi
+
+  rm $dst_file_name
+}
+
+function __client-env-symlink-add() {
+  local client=$1
+  local dst_dir=$2
+  local file_name=$3
+  local dst_file_name=$dst_dir/$file_name
+  local src_file_name=$LOCAL_DEV_DIR/$client/${client}-env/conf/$file_name
+
+  if [ -f $dst_file_name ] ; then
+    echo "Not linking $src_file_name to $dst_file_name as $dst_file_name is already present"
+    return 1
+  fi
+
+  mkdir -p $dst_dir
+  ln -s $src_file_name $dst_file_name
 }
 
 function __client-env-symlink-rm() {
   local client=$1
-  local dir=$2
-  local file=$3
+  local dst_dir=$2
+  local file_name=$3
+  local dst_file_name=$dst_dir/$file_name
 
-  if [ ! -L "$dir/$file" ] ; then
-    echo "Not removing $dir/$file as it is not a symbolic link"
+  if [ ! -L "$dst_file_name" ] ; then
+    echo "Not removing $dst_file_name as it is not a symbolic link"
     return 1
   fi
 
-  local orig_pwd="`pwd`"
-  cd $dir
-  rm -f $file
-  cd "$orig_pwd"
+  rm $dst_file_name
 }
 
 function client-env-set() {
