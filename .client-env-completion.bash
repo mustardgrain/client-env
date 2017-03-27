@@ -20,52 +20,6 @@ function __client-env-get-client() {
   fi
 }
 
-function __client-env-etc-hosts-merge() {
-  # Merge our /etc/hosts templates together for the client
-  local client=`__client-env-get-client`
-  local client_hosts_file_name=$LOCAL_DEV_DIR/$client/${client}-env/conf/hosts
-
-  # Don't bother messing with the files if there isn't a
-  # custom override for the client
-  if [ ! -f $client_hosts_file_name ] ; then
-    return
-  fi
-
-  if [ ! -f /etc/hosts.orig ] ; then
-    sudo cp /etc/hosts /etc/hosts.orig
-  fi
-
-  cat /etc/hosts.orig                                     | sudo tee    /etc/hosts > /dev/null
-  echo "# The following is from:                        " | sudo tee -a /etc/hosts > /dev/null
-  echo "#                                               " | sudo tee -a /etc/hosts > /dev/null
-  echo "#     $client_hosts_file_name                   " | sudo tee -a /etc/hosts > /dev/null
-  echo "#                                               " | sudo tee -a /etc/hosts > /dev/null
-  echo "# The original hosts file is at /etc/hosts.orig " | sudo tee -a /etc/hosts > /dev/null
-  echo "# and will be restored when client-env-clear is " | sudo tee -a /etc/hosts > /dev/null
-  echo "# called by the user.                           " | sudo tee -a /etc/hosts > /dev/null
-  cat $client_hosts_file_name                             | sudo tee -a /etc/hosts > /dev/null
-}
-
-function __client-env-etc-hosts-revert() {
-  # Copy our original template back
-  if [ -f /etc/hosts.orig ] ; then
-    sudo mv /etc/hosts.orig /etc/hosts
-  fi
-}
-
-function __client-env-ssh-config-merge() {
-  # Merge our SSH config templates together for the client
-  local client=`__client-env-get-client`
-
-  cat $MASTER_SSH_CONFIG                                    > $HOME/.ssh/config
-  cat $LOCAL_DEV_DIR/$client/${client}-env/conf/ssh_config >> $HOME/.ssh/config
-}
-
-function __client-env-ssh-config-revert() {
-  # Copy our original config template back
-  cp $MASTER_SSH_CONFIG $HOME/.ssh/config
-}
-
 function __client-env-cp() {
   local client=`__client-env-get-client`
   local dst_dir=$1
