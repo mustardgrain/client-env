@@ -1,10 +1,5 @@
 #!/bin/bash
 
-if [ "$MASTER_SSH_CONFIG" = "" ] ; then
-  echo "Please set the MASTER_SSH_CONFIG environment variable before using client-env"
-  return 2
-fi
-
 if [ "$LOCAL_DEV_DIR" = "" ] ; then
   echo "Please set the LOCAL_DEV_DIR environment variable before using client-env"
   return 2
