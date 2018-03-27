@@ -131,7 +131,7 @@ function client-env-clear() {
   PS1=`echo "$PS1" | sed "s@[(]$client[)] @@"`
 }
 
-function _client_env_set_completion() {
+function client-env-ls() {
   # Look at the list of directories in $LOCAL_DEV_DIR
   local orig_pwd="`pwd`"
 
@@ -146,7 +146,13 @@ function _client_env_set_completion() {
   cd "$orig_pwd"
 }
 
-complete -W "$(_client_env_set_completion)" client-env-set
+function client-env-print() {
+  if [ -L "$HOME/.current-client-env" ] ; then
+    basename `readlink $HOME/.current-client-env`
+  fi
+}
+
+complete -W "$(client-env-ls)" client-env-set
 
 if [ -L "$HOME/.current-client-env" ] ; then
   client-env-set $(basename `readlink $HOME/.current-client-env`)
