@@ -253,7 +253,7 @@ function __client-env-write-aws-ini-file() {
   local parent_dir_name
   file_name="$1"
   section_name="$2"
-  parent_dir_name=$(basename "$file_name")
+  parent_dir_name=$(dirname "$file_name")
 
   __client-env-log-debug "mkdir-ing parent directory $parent_dir_name"
   mkdir -p "$parent_dir_name"
