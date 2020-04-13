@@ -46,23 +46,27 @@ if [ "$LOCAL_DEV_DIR" = "" ] ; then
 fi
 
 function __client-init-dirs() {
+  __client-env-log-warn "__client-init-dirs is deprecated; use __client-env-init-dirs instead"
+  __client-env-init-dirs
+}
+
+function __client-env-init-dirs() {
   local client
-  client=$(__client-env-get-client)
+
+  if [ -L "$CLIENT_ENV_CURRENT_FILE" ] ; then
+    client=$(basename "$(readlink "$CLIENT_ENV_CURRENT_FILE")")
+  else
+    __client-env-log-error "Please make sure to have called client-env-set before using client-env functions"
+    return
+  fi
+
   export CLIENT_ENV_CLIENT_DIR=$LOCAL_DEV_DIR/$client
   export CLIENT_ENV_ENV_DIR=$CLIENT_ENV_CLIENT_DIR/$client-env
   export CLIENT_ENV_BIN_DIR=$CLIENT_ENV_ENV_DIR/bin
   export CLIENT_ENV_CONF_DIR=$CLIENT_ENV_ENV_DIR/conf
   export CLIENT_ENV_CONF_LOCAL_DIR=$CLIENT_ENV_CONF_DIR/local
-}
-
-function __client-env-get-client() {
-  if [ -L "$CLIENT_ENV_CURRENT_FILE" ] ; then
-    basename "$(readlink "$CLIENT_ENV_CURRENT_FILE")"
-    return 0
-  else
-    __client-env-log-error "Please make sure to have called client-env-set before using client-env functions"
-    return 3
-  fi
+  export CLIENT_ENV_LOGS_DIR=$CLIENT_ENV_ENV_DIR/logs
+  export CLIENT_ENV_NOTES_DIR=$CLIENT_ENV_ENV_DIR/notes
 }
 
 function __client-env-source() {
@@ -94,7 +98,14 @@ function __client-env-cp() {
   __client-env-log-warn "__client-env-cp is deprecated"
 
   local client
-  client=$(__client-env-get-client)
+
+  if [ -L "$CLIENT_ENV_CURRENT_FILE" ] ; then
+    client=$(basename "$(readlink "$CLIENT_ENV_CURRENT_FILE")")
+  else
+    __client-env-log-error "Please make sure to have called client-env-set before using client-env functions"
+    return
+  fi
+
   local dst_dir=$1
   local file_name=$2
   local dst_file_name=$dst_dir/$file_name
@@ -114,7 +125,14 @@ function __client-env-rm() {
   __client-env-log-warn "__client-env-rm is deprecated"
 
   local client
-  client=$(__client-env-get-client)
+
+  if [ -L "$CLIENT_ENV_CURRENT_FILE" ] ; then
+    client=$(basename "$(readlink "$CLIENT_ENV_CURRENT_FILE")")
+  else
+    __client-env-log-error "Please make sure to have called client-env-set before using client-env functions"
+    return
+  fi
+
   local dst_dir=$1
   local file_name=$2
   local dst_file_name=$dst_dir/$file_name
@@ -133,7 +151,14 @@ function __client-env-symlink-add() {
   __client-env-log-warn "__client-env-symlink-add is deprecated"
 
   local client
-  client=$(__client-env-get-client)
+
+  if [ -L "$CLIENT_ENV_CURRENT_FILE" ] ; then
+    client=$(basename "$(readlink "$CLIENT_ENV_CURRENT_FILE")")
+  else
+    __client-env-log-error "Please make sure to have called client-env-set before using client-env functions"
+    return
+  fi
+
   local dst_dir=$1
   local file_name=$2
   local dst_file_name=$dst_dir/$file_name
@@ -152,7 +177,14 @@ function __client-env-symlink-rm() {
   __client-env-log-warn "__client-env-symlink-rm is deprecated"
 
   local client
-  client=$(__client-env-get-client)
+
+  if [ -L "$CLIENT_ENV_CURRENT_FILE" ] ; then
+    client=$(basename "$(readlink "$CLIENT_ENV_CURRENT_FILE")")
+  else
+    __client-env-log-error "Please make sure to have called client-env-set before using client-env functions"
+    return
+  fi
+
   local dst_dir=$1
   local file_name=$2
   local dst_file_name=$dst_dir/$file_name
@@ -323,6 +355,18 @@ function client-env-clear() {
   fi
 
   PS1=$(echo "$PS1" | sed "s@[(]$client[)] @@")
+}
+
+function client-env-touch-new-note() {
+  if [ "$CLIENT_ENV_NOTES_DIR" = "" ] ; then
+    __client-env-log-error "Please make sure to have called client-env-set before using client-env functions"
+    return
+  fi
+
+  local new_note="$CLIENT_ENV_NOTES_DIR/$(date +%Y/%m/%Y-%m-%d).md"
+  mkdir -p "$(dirname "$new_note")"
+  touch "$new_note"
+  echo "Created $new_note to edit."
 }
 
 function client-env-ls() {
