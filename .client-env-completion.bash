@@ -323,8 +323,6 @@ function client-env-set() {
     cd "$LOCAL_DEV_DIR/$client" || exit
   fi
 
-  PS1="($client) $PS1"
-
   if [ ! -L "$CLIENT_ENV_CURRENT_FILE" ] ; then
     cd "$HOME" || exit
     ln -s "$LOCAL_DEV_DIR/$client" "$CLIENT_ENV_CURRENT_FILE"
@@ -353,8 +351,6 @@ function client-env-clear() {
     rm -f "$CLIENT_ENV_CURRENT_FILE"
     cd "$orig_pwd" || exit
   fi
-
-  PS1=$(echo "$PS1" | sed "s@[(]$client[)] @@")
 }
 
 function client-env-touch-new-note() {
