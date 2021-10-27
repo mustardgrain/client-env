@@ -10,7 +10,7 @@ if [ "$CLIENT_ENV_LOG_LEVEL" = "" ] ; then
   CLIENT_ENV_LOG_LEVEL=$__CLIENT_ENV_LOG_LEVEL_WARN
 fi
 
-CLIENT_ENV_CONFIG_DIR=$HOME/.config/client-env
+export CLIENT_ENV_CONFIG_DIR=$HOME/.config/client-env
 mkdir -p "$CLIENT_ENV_CONFIG_DIR"
 
 export CLIENT_ENV_CURRENT_FILE=$CLIENT_ENV_CONFIG_DIR/current
